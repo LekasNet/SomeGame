@@ -2,21 +2,32 @@ import random
 from OpenGL.GL import *
 import math
 
+RAINBOW_COLORS = [
+    (1, 0, 0),  # Красный
+    (1, 0.5, 0),  # Оранжевый
+    (1, 1, 0),  # Жёлтый
+    (0, 1, 0),  # Зелёный
+    (0, 0, 1),  # Синий
+    (0.29, 0, 0.51),  # Индиго
+    (0.56, 0, 1)  # Фиолетовый
+]
+
 class NPC:
-    def __init__(self, field, x, y, size=200, speed=4, mode=1):
+    def __init__(self, field, x, y, size=200, speed=4, mode=1, color=None):
         self.size = size
         self.half_size = size / 2
-        self.field = field  # Ссылка на объект игрового поля
+        self.field = field
         self.x = x
         self.y = y
         self.mode = mode
-        self.speed = speed if mode == 1 else 0  # Движение только в mode 1
+        self.speed = speed if mode == 1 else 0
         self.velocity_x = self.speed * random.choice([-1, 1]) * random.uniform(0.5, 1.0)
         self.velocity_y = self.speed * random.choice([-1, 1]) * random.uniform(0.5, 1.0)
-        self.color = (random.random(), random.random(), random.random())
+        self.color = color if color else random.choice(RAINBOW_COLORS)  # Используем переданный цвет или случайный из радуги
 
         self.health = 3  # Стартовое здоровье
         self.has_spikes = False  # Флаг наличия шипов
+
 
     def update(self, npcs):
         """ Обновляет позицию NPC, проверяет столкновения с границами и другими NPC """

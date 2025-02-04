@@ -5,6 +5,9 @@ from OpenGL.GL import *
 
 from objects import Field, NPC, generate_spawn_positions, HealthPack, AttackUpgrade, generate_powerup_position
 
+from interface import HealthBar
+from objects.npc import RAINBOW_COLORS
+
 # Инициализация GLFW
 if not glfw.init():
     raise Exception("GLFW не смог инициализироваться")
@@ -24,16 +27,20 @@ glfw.make_context_current(window)
 
 # Создаём объекты игрового мира
 field = Field(screen_width, screen_height)
+# Создаём UI для здоровья
+health_bar = HealthBar(field)
 
 # Количество NPC
 num_npcs = 5
 npc_size = 200
+speed = 10
 
 # Генерируем позиции для NPC
 spawn_positions = generate_spawn_positions(field, npc_size, num_npcs)
 
-# Создаём NPC в корректных местах
-npcs = [NPC(field, x, y, size=npc_size, mode=1) for x, y in spawn_positions]
+# Создаём NPC в корректных местах с цветами из радуги
+npcs = [NPC(field, x, y, size=npc_size, mode=1, speed=speed, color=RAINBOW_COLORS[i % len(RAINBOW_COLORS)]) for i, (x, y) in enumerate(spawn_positions)]
+
 field.npcs = npcs  # Добавляем NPC в поле, чтобы PowerUps могли обращаться к ним
 
 # Список активных PowerUps
@@ -65,10 +72,19 @@ while not glfw.window_should_close(window):
     for powerup in powerups:
         powerup.update(npcs)
 
+    # Удаляем мёртвых NPC
+    npcs = [npc for npc in npcs if npc.health > 0]
+
+    # Проверяем, если остался 1 NPC → останавливаем его
+    if len(npcs) == 1:
+        npcs[0].mode = 0
+
     field.draw()
 
     for npc in npcs:
         npc.draw()
+
+    health_bar.draw_all(npcs)  # Теперь рисуем все полоски разом
 
     for powerup in powerups:
         powerup.draw()
